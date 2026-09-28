@@ -1,0 +1,6 @@
+split,family,detector,auroc,tpr_at_1fpr,acc,f1,n,coverage,n_train,seconds
+in_domain,in_domain,RoBERTa fine-tuned (supervised),0.9990989170161522,0.9972565157750343,0.9952120383036935,0.9951956074124915,1462,1.0,3418,143.5
+loo_dom:finance,loo_dom,RoBERTa fine-tuned (supervised),0.9954354354354353,1.0,0.9917808219178083,0.9917355371900827,365,1.0,2583,100.6
+loo_dom:medicine,loo_dom,RoBERTa fine-tuned (supervised),1.0,1.0,0.9941348973607038,0.9938271604938271,341,1.0,2561,99.7
+loo_dom:reddit_eli5,loo_dom,RoBERTa fine-tuned (supervised),0.9965932642487046,0.995,0.9669211195928753,0.9664082687338501,393,1.0,2618,101.9
+loo_dom:wiki_csai,loo_dom,RoBERTa fine-tuned (supervised),0.9872732043784676,0.8304093567251462,0.7553516819571865,0.8095238095238095,327,1.0,2586,99.9

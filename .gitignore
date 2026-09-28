@@ -1,0 +1,16 @@
+# environments / caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+
+# large or regenerable artefacts (rebuild with scripts 01-02)
+data/processed/
+data/generated/
+features/
+models/
+*.tmp.npz
+
+# results/ IS committed: summary.md, confounds.md, grid.csv, roberta.csv, figures/

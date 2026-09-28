@@ -1,0 +1,65 @@
+# Default configuration -- sized for a 6 GB laptop GPU (RTX 4050).
+seed: 0
+dataset_name: main_v2                    # stage 2: HC3 + 4 local LLMs + temperature sweep + attacks (stage 1 = "main")
+
+data:
+  min_words: 60                          # PHD needs ~50+ tokens to be stable
+  hc3:
+    enabled: true
+    domains: [finance, medicine, open_qa, reddit_eli5, wiki_csai]
+    max_per_domain: 600                  # per class -> 6000 texts total
+  raid:
+    enabled: false                       # turn on for 11 generators + adversarial attacks
+    split: train
+    models: [gpt4, chatgpt, llama-chat, mistral-chat, cohere-chat, mpt-chat, gpt2]
+    domains: [news, reddit, reviews, abstracts, wiki]
+    attacks: [none, paraphrase, synonym, homoglyph, article_deletion]
+    decodings: [sampling]
+    n_per_cell: 60
+    max_scan: 3000000
+  mage:
+    enabled: false
+    split: test
+    n: 4000
+  local_files:                           # JSONL files in the unified schema
+    - data/generated/ollama.jsonl        # from scripts/01b_generate_ollama.py
+    - data/generated/paraphrased.jsonl   # from scripts/01c_paraphrase.py
+    - data/generated/frontier.jsonl      # from scripts/01d_collect_frontier.py
+
+generation:                              # scripts/01b_generate_ollama.py
+  ollama_url: http://localhost:11434
+  models: [qwen2.5:7b, llama3.1:8b, mistral:7b, gemma3:4b]   # all fit in 6 GB at Ollama's default 4-bit
+  temperatures: [0.7]                    # every model at T=0.7 ...
+  temperature_sweep:                     # ... plus one model across temperatures (PHD's known weak spot)
+    model: qwen2.5:7b
+    temperatures: [0.2, 1.0, 1.4]
+  prompts_per_domain: 60                 # questions sampled from HC3 per domain (x5 domains = 300)
+  max_tokens: 350
+  paraphrase_model: llama3.1:8b          # attacker should differ from the generators it rewrites
+
+features:
+  encoder: roberta-base                  # PHD / embedding / attention topology
+  cloud_max_tokens: 512
+  attn_max_tokens: 256                   # attention topology cost grows ~T^2
+  cloud_h1: true
+  attn_h1: false                         # H1 per head is slow; enable for ablation only
+  scorer: Qwen/Qwen2.5-0.5B              # likelihood + Fast-DetectGPT
+  bino_observer: Qwen/Qwen2.5-0.5B       # scaled-down Binoculars (original: Falcon-7B pair)
+  bino_performer: Qwen/Qwen2.5-0.5B-Instruct
+  load_in_4bit: false                    # set true to use 1.5B-7B scorers on 6 GB
+  chunk_size: 250
+  workers: 4                             # CPU threads for the TDA computations
+
+splits:
+  test_size: 0.3
+  min_per_class: 20
+  min_per_generator: 50
+  reference_temps: [0.7]
+  heldout_sources: [frontier]
+
+roberta:                                 # scripts/05_finetune_roberta.py
+  model: roberta-base
+  max_length: 256
+  epochs: 2
+  batch_size: 16
+  lr: 2.0e-5
